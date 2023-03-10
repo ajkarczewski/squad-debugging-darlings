@@ -1,27 +1,22 @@
 import "../CSS/LoginModal.css";
 import { useState, useEffect } from "react";
-import { Paper, Alert } from "@mui/material";
+import {Alert } from "@mui/material";
 import Nav from "./Nav";
 import { AlertSeverity } from "../constants/AlertSeverity";
-import { SignupModal } from "./SignupModal";
-import { Link } from "react-router-dom";
-import { ProgressBarForm } from "./ProgressBarForm";
+import { Link, useLocation } from "react-router-dom";
 
-export const LoginModal = ({ closeLoginModal, alertMsg, setAlertMsg }) => {
+export const LoginModal = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
+  const { state } = useLocation();
+  const { emailLogin, alertMsg, setAlertMsg } = state;
   useEffect(() => {
     const isValid = email && password;
     console.log(isValid);
     setIsButtonDisabled(!isValid);
   });
-
-  const showSignupModal = () => {
-    // closeLoginModal(true);
-    open(SignupModal, "_self");
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,7 +36,7 @@ export const LoginModal = ({ closeLoginModal, alertMsg, setAlertMsg }) => {
       })
       .catch((error) => console.log(error));
   };
-
+  console.log({ emailLogin, alertMsg });
   return (
     <>
       <Nav />
@@ -64,6 +59,7 @@ export const LoginModal = ({ closeLoginModal, alertMsg, setAlertMsg }) => {
                 placeholder="info@cherry.com"
                 id="email"
                 name="email"
+                defaultValue={emailLogin ? emailLogin : ''}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
@@ -95,7 +91,7 @@ export const LoginModal = ({ closeLoginModal, alertMsg, setAlertMsg }) => {
           </form>
           <div className="register-account">
             <p>Not a member yet?</p>
-            <button className="register-button" onClick={showSignupModal}>
+            <button className="register-button">
               Register Now
             </button>
           </div>

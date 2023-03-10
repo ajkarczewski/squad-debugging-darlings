@@ -13,7 +13,7 @@ const App = () => {
       <Routes>
         <Route
           path="/signup"
-          element={<SignupModal setAlertMsg={setAlertMsg} />}
+          element={<SignupModal />}
         />
         <Route
           path="/login"

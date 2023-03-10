@@ -181,16 +181,16 @@ app.get("/auth/welcome", auth, (req,res) => {
 });
 
 //Jinju will provide confidential
-const uri = "";
+// const uri = "";
 
-mongoose.connect(process.env.MONGO_URI || uri,{
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('MongoDB connected');
-}).catch((err) => {
-  console.log('MongoDB connection error', err)
-});
+// mongoose.connect(process.env.MONGO_URI || uri,{
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// }).then(() => {
+//   console.log('MongoDB connected');
+// }).catch((err) => {
+//   console.log('MongoDB connection error', err)
+// });
 
 app.listen(port, () => {
   console.log(

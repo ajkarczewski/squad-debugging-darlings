@@ -1,43 +1,38 @@
 import { useState, useEffect } from "react";
 import "../CSS/SignupModal.css";
 import { LoginModal } from "./LoginModal";
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate } from 'react-router-dom'
 import Nav from "./Nav";
+import { Alert } from "@mui/material";
 
-export const SignupModal = ({ setAlertMsg }) => {
+
+export const SignupModal = () => {
+  const baseURL = "http://localhost:3000";
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [message, setMessage] = useState("");
-  const [emailMatchError, setEmailMatchError] = useState(false);
+  const [validEmail, setValidEmail] = useState(true);
   const [passwordError, setPasswordError] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
 
   const navigate = useNavigate();
-  useEffect(() => {
-    const isValid =
-      email &&
-      password &&
-      passwordConfirm &&
-      email !== "" &&
-      password !== "" &&
-      passwordConfirm !== "";
-    setIsButtonDisabled(!isValid);
-    setEmailMatchError(
-      email !== ""
-    );
-  }, [email, password, passwordConfirm]);
 
   const validatePassword = (value) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
     setPasswordError(!passwordRegex.test(value));
-    console.log(passwordError);
   };
 
-  const showLoginModal = () => {
-    console.log("Are we here")
-    navigate('/login', { alertMsg: alertMsg })
-  };
+  const validateEmail = (value) => {
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    setValidEmail(emailRegex.test(value));
+  }
+
+  useEffect(() => {
+    if (validEmail && !passwordError) {
+      setIsButtonDisabled(false);
+    }
+  }, [email, password, passwordConfirm]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -45,28 +40,33 @@ export const SignupModal = ({ setAlertMsg }) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email,
-        password,
+        email: email,
+        password: password,
         password_confirm: passwordConfirm,
       }),
     };
-    fetch("http://localhost:3000/auth/signup", requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        if (data.message === "Email already exists") {
-          console.log("we are in this block")
-          setAlertMsg("Email already exists. Please login!");
-          showLoginModal();
-        } else {
-          setEmail("");
-          setPassword("");
-          setPasswordConfirm("");
-          setAlertMsg("Account successfully created!");
-          showLoginModal();
+
+    fetch(`${baseURL}/auth/signup`, requestOptions)
+      .then(res => {
+        if (res.ok) {
+          // return <Navigate replace to='/login' alertMsg={"Success"} setAlertMsg={setAlertMsg}/>
+          navigate('/login', { state: { alertMsg: "Account successfully created!", setAlertMsg: { setAlertMsg }, emailLogin: { email } } });
         }
+        else return res.json();
+      }
+      )
+      .then(data => {
+        console.log(data.message)
+        if (data.message === 'Email already exists') {
+          const msg = data.message
+          navigate('/login', { state: { alertMsg: msg, setAlertMsg: { setAlertMsg }, emailLogin: { email } } });
+        }
+        else setAlertMsg(data.message);
+
       })
-      .catch((error) => console.log(error));
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   return (
@@ -79,14 +79,16 @@ export const SignupModal = ({ setAlertMsg }) => {
             <p>Register with your email</p>
           </div>
           <form className="form" onSubmit={handleSubmit}>
+            {alertMsg ? <Alert severity="error">{alertMsg}</Alert> : <></>}
             <label>Email</label>
             <input
               type="email"
               value={email}
               placeholder="info@cherry.com"
               onChange={(e) => setEmail(e.target.value)}
+              onInput={(e) => validateEmail(e.target.value)}
             />
-            {emailMatchError && (
+            {!validEmail && (
               <p className="error-message">This value is not a valid email.</p>
             )}
             <label>Password</label>
@@ -130,7 +132,6 @@ export const SignupModal = ({ setAlertMsg }) => {
               Register Account
             </button>
           </form>
-          {message && <p>{message}</p>}
           <div className="login-account">
             <p>Already have an account?</p>
             <Link className="log-in-button" to="/login">Log In</Link>
